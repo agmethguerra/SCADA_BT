@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCADA Banda transportadora</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="importmap">
+    { "imports": { "three": "/vendor/three/build/three.module.js",
+                   "three/addons/": "/vendor/three/examples/jsm/" } }
+  </script>
+</head>
+<body>
+
+  <header class="encabezado">
+    <div class="marca">
+      <h1>SCADA Banda transportadora</h1>
+      <span class="subtitulo">ID <strong>BANDA-LAB-01</strong> (provisional), solo lectura</span>
+    </div>
+    <div class="estado-comunicacion">
+      <span id="badge-origen" class="badge badge-sim">SIMULACIÓN</span>
+      <span id="badge-comunicacion" class="badge badge-neutro">
+        <span class="punto"></span>
+        <span id="texto-comunicacion">Comunicación: --</span>
+      </span>
+      <span class="actualizacion">Última actualización <strong id="ultima-actualizacion">--</strong></span>
+    </div>
+  </header>
+
+  <div id="aviso-simulacion" class="aviso">
+    <span>Modo simulación: los datos mostrados no provienen del PLC ni del proceso real.</span>
+    <button id="btn-corte" class="btn-sim" type="button">Simular pérdida de comunicación</button>
+  </div>
+
+  <main class="tablero">
+
+    <section class="panel area-banda">
+      <div class="panel-cabecera">
+        <h2>Vista 3D de la banda</h2>
+        <button id="btn-vista" class="btn-accion" type="button">Restablecer vista</button>
+      </div>
+      <div id="vista3d">
+        <p class="ayuda-3d">Arrastrar: rotar. Rueda: zoom. Clic derecho: mover.</p>
+      </div>
+    </section>
+
+    <section class="panel area-historial">
+      <div class="panel-cabecera">
+        <h2>Historial de eventos</h2>
+        <div class="acciones">
+          <button id="btn-exportar" class="btn-accion" type="button">Exportar CSV</button>
+          <button id="btn-limpiar" class="btn-accion" type="button">Borrar historial</button>
+        </div>
+      </div>
+      <div class="tabla-scroll">
+        <table>
+          <thead><tr><th>Fecha y hora</th><th>Evento</th><th>Valor</th><th>Origen</th></tr></thead>
+          <tbody id="tabla-historial"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="lateral">
+      <section class="panel">
+        <h2>Estado general</h2>
+        <div class="tarjetas">
+          <div class="tarjeta" id="tarjeta-modo"><span class="rotulo">Modo de operación</span><span class="valor" id="valor-modo">--</span></div>
+          <div class="tarjeta" id="tarjeta-estado"><span class="rotulo">Estado de la banda</span><span class="valor" id="valor-estado">--</span></div>
+          <div class="tarjeta" id="tarjeta-alarmas"><span class="rotulo">Alarmas activas</span><span class="valor" id="valor-num-alarmas">--</span></div>
+        </div>
+      </section>
+      <section class="panel">
+        <h2>Variables de proceso (propuestas)</h2>
+        <div class="tarjetas">
+          <div class="tarjeta" id="tarjeta-motor"><span class="rotulo">Motor</span><span class="valor" id="valor-motor">--</span></div>
+          <div class="tarjeta" id="tarjeta-sensor-entrada"><span class="rotulo">Sensor de entrada</span><span class="valor" id="valor-sensor-entrada">--</span></div>
+          <div class="tarjeta" id="tarjeta-sensor-salida"><span class="rotulo">Sensor de salida</span><span class="valor" id="valor-sensor-salida">--</span></div>
+          <div class="tarjeta" id="tarjeta-conteo"><span class="rotulo">Productos contados</span><span class="valor" id="valor-conteo">--</span></div>
+        </div>
+      </section>
+      <section class="panel panel-alarmas">
+        <h2>Alarmas</h2>
+        <ul id="lista-alarmas" class="lista-alarmas">
+          <li class="alarma-vacia">Sin información de alarmas</li>
+        </ul>
+      </section>
+    </aside>
+
+  </main>
+
+  <script src="js/app.js"></script>
+  <script type="module" src="js/banda3d.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Dependencias (se reinstalan con npm run setup)
+node_modules/
+
+# Archivos de estado, sesiones y secretos generados por Node-RED
+nodered/.config.*.json
+nodered/.sessions.json
+nodered/flows_cred.json
+nodered/lib/
+*.backup
+
+# Sistema y logs
+.DS_Store
+*.log

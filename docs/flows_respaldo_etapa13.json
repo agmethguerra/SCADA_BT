@@ -1,0 +1,332 @@
+[
+    {
+        "id": "30fe27e0d08c6026",
+        "type": "tab",
+        "label": "Flujo 1",
+        "disabled": true,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1d796f1014a01996",
+        "type": "tab",
+        "label": "Flujo 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "9957179197d14b17",
+        "type": "websocket-listener",
+        "path": "/ws/banda",
+        "wholemsg": "false"
+    },
+    {
+        "id": "d60382de38c47c06",
+        "type": "OpcUa-Endpoint",
+        "name": "",
+        "endpoint": "opc.tcp://localhost:4840/UA/BandaSim",
+        "secpol": "None",
+        "secmode": "None",
+        "none": true,
+        "login": false,
+        "usercert": false,
+        "usercertificate": "",
+        "userprivatekey": ""
+    },
+    {
+        "id": "ae5fc60afb292dc1",
+        "type": "inject",
+        "z": "30fe27e0d08c6026",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 200,
+        "y": 200,
+        "wires": [
+            [
+                "6e3642766d9b2f65"
+            ]
+        ]
+    },
+    {
+        "id": "599866036f384ce1",
+        "type": "debug",
+        "z": "30fe27e0d08c6026",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 180,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "6e3642766d9b2f65",
+        "type": "function",
+        "z": "30fe27e0d08c6026",
+        "name": "SIMULACIÓN",
+        "func": "// DATOS SIMULADOS: no provienen del PLC.\n// Ciclo de 40 s: 30 s en marcha, 10 s detenido. Un producto nuevo cada 10 s.\nconst POS_ENTRADA = 0.19;\nconst POS_SALIDA  = 0.81;\nconst AVANCE      = 1 / 8;    // el producto cruza la banda en 8 s\n\nlet s = context.get(\"sim\") || { tick: 0, productos: [], contador: 0 };\ns.tick++;\n\nconst motor = (s.tick % 40) < 30;\n\nif (motor) {\n    if (s.tick % 10 === 5) s.productos.push(0);\n    const siguientes = [];\n    s.productos.forEach((p) => {\n        const nueva = p + AVANCE;\n        if (p < POS_SALIDA && nueva >= POS_SALIDA) s.contador++;\n        if (nueva <= 1) siguientes.push(nueva);\n    });\n    s.productos = siguientes;\n}\ncontext.set(\"sim\", s);\n\nconst cerca = (pos) => s.productos.some((p) => Math.abs(p - pos) < 0.07);\n\nmsg.payload = {\n    origen: \"SIMULACION\",\n    timestamp: new Date().toISOString(),\n    motor: motor,\n    sensorEntrada: cerca(POS_ENTRADA),\n    sensorSalida: cerca(POS_SALIDA),\n    productos: s.contador,\n    modo: \"AUTOMÁTICO\",\n    alarmas: motor ? [] : [{ codigo: \"SIM-01\", mensaje: \"Motor detenido (alarma simulada)\" }]\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 200,
+        "y": 300,
+        "wires": [
+            [
+                "599866036f384ce1",
+                "03c39c8c456ce374"
+            ]
+        ]
+    },
+    {
+        "id": "03c39c8c456ce374",
+        "type": "websocket out",
+        "z": "30fe27e0d08c6026",
+        "name": "",
+        "server": "9957179197d14b17",
+        "client": "",
+        "x": 460,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "8427b7dd5eabb3f1",
+        "type": "inject",
+        "z": "1d796f1014a01996",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 360,
+        "y": 260,
+        "wires": [
+            [
+                "0d97f4d0e700807e",
+                "464a6f8a814cedc7",
+                "53aa91c9c79f958b",
+                "9e47d2b245790b14"
+            ]
+        ]
+    },
+    {
+        "id": "0d97f4d0e700807e",
+        "type": "OpcUa-Item",
+        "z": "1d796f1014a01996",
+        "item": "ns=1;s=motor",
+        "datatype": "Boolean",
+        "value": "",
+        "name": "motor",
+        "x": 410,
+        "y": 340,
+        "wires": [
+            [
+                "bfbe4745851da616"
+            ]
+        ]
+    },
+    {
+        "id": "bfbe4745851da616",
+        "type": "OpcUa-Client",
+        "z": "1d796f1014a01996",
+        "endpoint": "d60382de38c47c06",
+        "action": "read",
+        "deadbandtype": "a",
+        "deadbandvalue": 1,
+        "time": 10,
+        "timeUnit": "s",
+        "certificate": "n",
+        "localfile": "",
+        "localkeyfile": "",
+        "securitymode": "None",
+        "securitypolicy": "None",
+        "useTransport": false,
+        "maxChunkCount": 1,
+        "maxMessageSize": 8192,
+        "receiveBufferSize": 8192,
+        "sendBufferSize": 8192,
+        "setstatusandtime": false,
+        "keepsessionalive": false,
+        "name": "",
+        "applicationName": "",
+        "applicationUri": "",
+        "x": 640,
+        "y": 380,
+        "wires": [
+            [
+                "604b8a901f2ce3bd",
+                "d9473d20926c4bc3"
+            ],
+            [
+                "2d02c23f28201c3f"
+            ],
+            [
+                "d61ea7bed9c7f7b6"
+            ]
+        ]
+    },
+    {
+        "id": "2d02c23f28201c3f",
+        "type": "debug",
+        "z": "1d796f1014a01996",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 620,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "d61ea7bed9c7f7b6",
+        "type": "debug",
+        "z": "1d796f1014a01996",
+        "name": "salida abajo",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "604b8a901f2ce3bd",
+        "type": "debug",
+        "z": "1d796f1014a01996",
+        "name": "salida arriba",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 630,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "9e47d2b245790b14",
+        "type": "OpcUa-Item",
+        "z": "1d796f1014a01996",
+        "item": "ns=1;s=productos",
+        "datatype": "Boolean",
+        "value": "",
+        "name": "productos",
+        "x": 570,
+        "y": 220,
+        "wires": [
+            [
+                "bfbe4745851da616"
+            ]
+        ]
+    },
+    {
+        "id": "53aa91c9c79f958b",
+        "type": "OpcUa-Item",
+        "z": "1d796f1014a01996",
+        "item": "ns=1;s=sensorSalida",
+        "datatype": "Boolean",
+        "value": "",
+        "name": "sensorSalida",
+        "x": 570,
+        "y": 180,
+        "wires": [
+            [
+                "bfbe4745851da616"
+            ]
+        ]
+    },
+    {
+        "id": "464a6f8a814cedc7",
+        "type": "OpcUa-Item",
+        "z": "1d796f1014a01996",
+        "item": "ns=1;s=sensorEntrada",
+        "datatype": "Boolean",
+        "value": "",
+        "name": "sensorEntrada",
+        "x": 580,
+        "y": 140,
+        "wires": [
+            [
+                "bfbe4745851da616"
+            ]
+        ]
+    },
+    {
+        "id": "d9473d20926c4bc3",
+        "type": "function",
+        "z": "1d796f1014a01996",
+        "name": "Armar datos (SIMULACION)",
+        "func": "// Convierte las lecturas OPC UA al formato que espera la interfaz.\n// IMPORTANTE: cambiar ORIGEN a \"PLC\" SOLO cuando la fuente sea el PLC real.\nconst ORIGEN = \"SIMULACION\";\n\nconst NOMBRES = {\n    \"ns=1;s=motor\": \"motor\",\n    \"ns=1;s=sensorEntrada\": \"sensorEntrada\",\n    \"ns=1;s=sensorSalida\": \"sensorSalida\",\n    \"ns=1;s=productos\": \"productos\"\n};\n\nconst campo = NOMBRES[msg.topic];\nif (!campo) return null;                 // lectura desconocida: se ignora\n\nlet valores = context.get(\"valores\") || {};\nvalores[campo] = msg.payload;\ncontext.set(\"valores\", valores);\n\n// No se envía nada hasta tener las 4 variables\nconst completo = Object.values(NOMBRES).every((n) => valores[n] !== undefined);\nif (!completo) return null;\n\n// \"modo\" y \"alarmas\" NO se envían: este servidor no tiene esas señales.\nreturn {\n    payload: {\n        origen: ORIGEN,\n        timestamp: new Date().toISOString(),\n        motor: valores.motor,\n        sensorEntrada: valores.sensorEntrada,\n        sensorSalida: valores.sensorSalida,\n        productos: valores.productos\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 300,
+        "wires": [
+            [
+                "362b0614c24a7334"
+            ]
+        ]
+    },
+    {
+        "id": "362b0614c24a7334",
+        "type": "websocket out",
+        "z": "1d796f1014a01996",
+        "name": "",
+        "server": "9957179197d14b17",
+        "client": "",
+        "x": 920,
+        "y": 380,
+        "wires": []
+    }
+]
