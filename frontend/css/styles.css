@@ -142,6 +142,14 @@ body {
   background: #3a3a3a;
   border-color: #8a8a8a;
 }
+.btn-arrancar {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+.btn-arrancar:hover {
+  background: #244236;
+  border-color: var(--ok);
+}
 
 /* Tablero: la vista 3D ocupa casi todo */
 .tablero {

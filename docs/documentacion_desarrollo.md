@@ -23,6 +23,7 @@ Node.js, Node-RED, Express, HTML, CSS, JavaScript, OPC UA
 7. Seguridad
 8. Comunicación OPC UA (servidor simulado)
 9. Configuración centralizada de variables
+10. Control de arranque: botón en la interfaz, WebSocket → Node-RED y escritura OPC UA de `arrancar`
 
 ## 6. Comunicación con el PLC
 - Método elegido y justificación

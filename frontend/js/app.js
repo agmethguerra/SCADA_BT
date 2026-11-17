@@ -1,6 +1,6 @@
 /* ==================================================================
    SCADA BANDA TRANSPORTADORA · app.js
-   Etapa 5: interfaz alimentada con DATOS SIMULADOS
+   Datos por WebSocket desde Node-RED; orden "arrancar" hacia Node-RED
    ================================================================== */
 
 /* ---------- 1. CONFIGURACIÓN ---------- */
@@ -148,6 +148,13 @@ function detectarEventos(previo, actual) {
   if (previo.productos !== actual.productos && actual.productos !== undefined) {
     registrarEvento("Producto contado", actual.productos, origen);
   }
+  if (previo.arrancar !== actual.arrancar && actual.arrancar !== undefined) {
+    registrarEvento(
+      "Orden de arranque",
+      actual.arrancar ? "Arrancar (true)" : "Detener (false)",
+      origen,
+    );
+  }
   if (previo.modo !== actual.modo && actual.modo !== undefined) {
     registrarEvento("Modo de operación", actual.modo, origen);
   }
@@ -216,6 +223,13 @@ function renderizarDatos(d) {
   );
 
   // Variables de proceso
+  pintarTarjeta(
+    "tarjeta-arrancar",
+    "valor-arrancar",
+    textoBooleano(d.arrancar, "SOLICITADO", "NO SOLICITADO"),
+    d.arrancar === true ? "ok" : null,
+  );
+  $("btn-arrancar").textContent = d.arrancar === true ? "Detener" : "Arrancar";
   pintarTarjeta(
     "tarjeta-motor",
     "valor-motor",
@@ -400,6 +414,27 @@ function conectar() {
   socket.onerror = () => socket.close();
   socket.onclose = () => setTimeout(conectar, 2000); // reintenta cada 2 s
 }
+
+// Botón de arranque: invierte la orden "arrancar" y la envía a Node-RED.
+// La confirmación llega en el próximo dato leído por OPC UA.
+$("btn-arrancar").addEventListener("click", () => {
+  if (!socket || socket.readyState !== WebSocket.OPEN) {
+    registrarEvento(
+      "Orden de arranque no enviada",
+      "WebSocket sin conexión",
+      "Interfaz",
+    );
+    return;
+  }
+  const orden =
+    estado.ultimoDato && estado.ultimoDato.arrancar === true ? false : true;
+  socket.send(JSON.stringify({ arrancar: orden }));
+  registrarEvento(
+    "Orden enviada",
+    orden ? "Arrancar (arrancar=true)" : "Detener (arrancar=false)",
+    "Interfaz",
+  );
+});
 
 $("btn-corte").addEventListener("click", () => {
   cortePrueba = !cortePrueba;

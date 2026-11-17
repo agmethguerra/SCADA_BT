@@ -15,7 +15,7 @@
   <header class="encabezado">
     <div class="marca">
       <h1>SCADA Banda transportadora</h1>
-      <span class="subtitulo">ID <strong>BANDA-LAB-01</strong> (provisional), solo lectura</span>
+      <span class="subtitulo">ID <strong>BANDA-LAB-01</strong> (provisional), supervisión y arranque</span>
     </div>
     <div class="estado-comunicacion">
       <span id="badge-origen" class="badge badge-sim">SIMULACIÓN</span>
@@ -37,7 +37,10 @@
     <section class="panel area-banda">
       <div class="panel-cabecera">
         <h2>Vista 3D de la banda</h2>
-        <button id="btn-vista" class="btn-accion" type="button">Restablecer vista</button>
+        <div class="acciones">
+          <button id="btn-arrancar" class="btn-accion btn-arrancar" type="button">Arrancar</button>
+          <button id="btn-vista" class="btn-accion" type="button">Restablecer vista</button>
+        </div>
       </div>
       <div id="vista3d">
         <p class="ayuda-3d">Arrastrar: rotar. Rueda: zoom. Clic derecho: mover.</p>
@@ -70,8 +73,9 @@
         </div>
       </section>
       <section class="panel">
-        <h2>Variables de proceso (propuestas)</h2>
+        <h2>Variables de proceso</h2>
         <div class="tarjetas">
+          <div class="tarjeta" id="tarjeta-arrancar"><span class="rotulo">Arrancar (orden)</span><span class="valor" id="valor-arrancar">--</span></div>
           <div class="tarjeta" id="tarjeta-motor"><span class="rotulo">Motor</span><span class="valor" id="valor-motor">--</span></div>
           <div class="tarjeta" id="tarjeta-sensor-entrada"><span class="rotulo">Sensor de entrada</span><span class="valor" id="valor-sensor-entrada">--</span></div>
           <div class="tarjeta" id="tarjeta-sensor-salida"><span class="rotulo">Sensor de salida</span><span class="valor" id="valor-sensor-salida">--</span></div>

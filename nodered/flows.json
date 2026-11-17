@@ -267,7 +267,7 @@
         "type": "function",
         "z": "1d796f1014a01996",
         "name": "CONFIGURACIÓN DE VARIABLES (editar aquí)",
-        "func": "// ===== CONFIGURACIÓN DE LA FUENTE DE DATOS: ÚNICO LUGAR A EDITAR =====\n// \"origen\" debe ser \"PLC\" SOLO cuando los datos vengan del PLC real.\nconst CONFIG = {\n    origen: \"SIMULACION\",\n    variables: {\n        // nombre que usa la interfaz : NodeId en el servidor y tipo de dato\n        motor:         { nodeId: \"ns=1;s=motor\",         tipo: \"Boolean\" },\n        sensorEntrada: { nodeId: \"ns=1;s=sensorEntrada\", tipo: \"Boolean\" },\n        sensorSalida:  { nodeId: \"ns=1;s=sensorSalida\",  tipo: \"Boolean\" },\n        productos:     { nodeId: \"ns=1;s=productos\",     tipo: \"UInt32\"  }\n        // Variable que NO existe en el PLC: borra su línea y la interfaz\n        // mostrará \"No disponible\". No inventes NodeId.\n    }\n};\n\nflow.set(\"config\", CONFIG);   // \"Armar datos\" lee la configuración de aquí\n\n// Una orden de lectura por variable.\nconst mensajes = Object.values(CONFIG.variables).map((v) => ({\n    topic: v.nodeId + \";datatype=\" + v.tipo\n}));\nreturn [mensajes];",
+        "func": "// ===== CONFIGURACIÓN DE LA FUENTE DE DATOS: ÚNICO LUGAR A EDITAR =====\n// \"origen\" debe ser \"PLC\" SOLO cuando los datos vengan del PLC real.\nconst CONFIG = {\n    origen: \"SIMULACION\",\n    variables: {\n        // nombre que usa la interfaz : NodeId en el servidor y tipo de dato\n        motor:         { nodeId: \"ns=1;s=motor\",         tipo: \"Boolean\" },\n        sensorEntrada: { nodeId: \"ns=1;s=sensorEntrada\", tipo: \"Boolean\" },\n        sensorSalida:  { nodeId: \"ns=1;s=sensorSalida\",  tipo: \"Boolean\" },\n        productos:     { nodeId: \"ns=1;s=productos\",     tipo: \"UInt32\"  },\n        arrancar:      { nodeId: \"ns=1;s=arrancar\",      tipo: \"Boolean\" } // orden de arranque (escritura)\n        // Variable que NO existe en el PLC: borra su línea y la interfaz\n        // mostrará \"No disponible\". No inventes NodeId.\n    }\n};\n\nflow.set(\"config\", CONFIG);   // \"Armar datos\" lee la configuración de aquí\n\n// Una orden de lectura por variable.\nconst mensajes = Object.values(CONFIG.variables).map((v) => ({\n    topic: v.nodeId + \";datatype=\" + v.tipo\n}));\nreturn [mensajes];",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -281,5 +281,92 @@
                 "bfbe4745851da616"
             ]
         ]
+    },
+    {
+        "id": "aa00000000000001",
+        "type": "websocket in",
+        "z": "1d796f1014a01996",
+        "name": "Órdenes desde la interfaz",
+        "server": "9957179197d14b17",
+        "client": "",
+        "x": 640,
+        "y": 700,
+        "wires": [
+            [
+                "aa00000000000002"
+            ]
+        ]
+    },
+    {
+        "id": "aa00000000000002",
+        "type": "function",
+        "z": "1d796f1014a01996",
+        "name": "Orden de arranque",
+        "func": "// La interfaz envía { arrancar: true|false } por el WebSocket.\n// Cualquier otro mensaje se ignora: solo se acepta esta orden.\nlet orden = msg.payload;\nif (typeof orden === \"string\") {\n    try { orden = JSON.parse(orden); } catch (e) { return null; }\n}\nif (!orden || typeof orden.arrancar !== \"boolean\") return null;\n\nmsg.topic = \"ns=1;s=arrancar;datatype=Boolean\";\nmsg.payload = orden.arrancar;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 700,
+        "wires": [
+            [
+                "aa00000000000003"
+            ]
+        ]
+    },
+    {
+        "id": "aa00000000000003",
+        "type": "OpcUa-Client",
+        "z": "1d796f1014a01996",
+        "endpoint": "d60382de38c47c06",
+        "action": "write",
+        "deadbandtype": "a",
+        "deadbandvalue": 1,
+        "time": 10,
+        "timeUnit": "s",
+        "certificate": "n",
+        "localfile": "",
+        "localkeyfile": "",
+        "securitymode": "None",
+        "securitypolicy": "None",
+        "useTransport": false,
+        "maxChunkCount": 1,
+        "maxMessageSize": 8192,
+        "receiveBufferSize": 8192,
+        "sendBufferSize": 8192,
+        "setstatusandtime": false,
+        "keepsessionalive": false,
+        "name": "Escribir arrancar",
+        "applicationName": "",
+        "applicationUri": "",
+        "x": 1080,
+        "y": 700,
+        "wires": [
+            [
+                "aa00000000000004"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "aa00000000000004",
+        "type": "debug",
+        "z": "1d796f1014a01996",
+        "name": "resultado escritura arrancar",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 700,
+        "wires": []
     }
 ]

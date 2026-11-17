@@ -24,3 +24,4 @@ Regla: cada prueba indica si fue con DATOS SIMULADOS o con el PLC REAL.
 | 21 | 06/11/2026 | Recuperación tras reiniciar el servidor OPC UA | Simulados | Se recupera sola | OK: recuperación automática | Captura |
 | 23 | 06/11/2026 | Variables configuradas desde un solo nodo; quitar una variable la muestra como "No disponible" | Simulados | La interfaz funciona y marca No disponible la variable retirada | OK | Captura |
 | 24 | | Exploración (browse) del servidor OPC UA | Simulados | Lista las variables y sus NodeId | NO REALIZADA | A probar en el laboratorio si el servidor OPC UA está activo |
+| 25 | 17/11/2026 | Botón Arrancar/Detener: WebSocket → Node-RED → escritura OPC UA de `arrancar` | Simulados | `arrancar=true` produce `motor=true`; `arrancar=false` lo detiene | OK | Cliente WebSocket de prueba: órdenes confirmadas en el dato leído |

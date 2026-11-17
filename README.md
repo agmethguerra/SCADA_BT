@@ -1,6 +1,6 @@
 # SCADA Banda transportadora — Manual de instalación
 
-SCADA web de **solo lectura** para supervisar una banda transportadora. La interfaz se sirve con Express, recibe los datos por WebSocket desde Node-RED y los lee por OPC UA desde un servidor simulado (o desde el PLC real, una vez configurado).
+SCADA web para supervisar una banda transportadora, con **lectura de variables y control de arranque**. La interfaz se sirve con Express, recibe los datos por WebSocket desde Node-RED, los lee por OPC UA desde un servidor simulado (o desde el PLC real, una vez configurado) y envía la orden `arrancar` por el mismo WebSocket.
 
 ## 1. Requisitos
 
@@ -39,8 +39,8 @@ En Windows los mismos comandos funcionan en PowerShell o CMD.
 ## 4. Verificación
 
 1. Abrir `http://localhost:3000`.
-2. El badge superior debe decir **SIMULACIÓN** y el de comunicación debe estar activo. La vista 3D se anima en ciclos de 40 s (30 s en marcha, 10 s detenido).
-3. En Node-RED, los nodos `debug 2`, `salida arriba` y `salida abajo` muestran las lecturas OPC UA.
+2. El badge superior debe decir **SIMULACIÓN** y el de comunicación debe estar activo. La banda arranca detenida: pulsa **Arrancar** en la cabecera de la vista 3D para enviar `arrancar=true`; el botón pasa a **Detener** cuando la lectura confirma la orden.
+3. En Node-RED, los nodos `debug 2`, `salida arriba` y `salida abajo` muestran las lecturas OPC UA y `resultado escritura arrancar` confirma la escritura de la orden.
 4. Datos y eventos viajan por el WebSocket `ws://<host>:1880/ws/banda` (el frontend toma el host de la URL, así que la interfaz y Node-RED deben estar en el mismo computador o en un host alcanzable).
 
 Si la interfaz marca "sin comunicación", comprobar que el simulador y Node-RED siguen corriendo y que el puerto `1880` no esté ocupado. Los puertos usados son **3000**, **1880** y **4840**.
@@ -52,11 +52,11 @@ Las variables en uso están documentadas en `docs/inventario_variables.md` y se 
 Para pasar del simulador al PLC real:
 
 1. Arrancar Node-RED sin el simulador (o dejarlo apagado).
-2. Editar ese nodo: cambiar `origen: "SIMULACION"` por `origen: "PLC"` y reemplazar los `nodeId` por los reales del PLC, respetando el tipo de dato (`Boolean`, `UInt32`, etc.). **No inventar NodeIds**: solo se leen señales verificadas en el PLC.
-3. Ajustar el nodo `OpcUa-Endpoint` con la URL y la seguridad del servidor real (actualmente `None`/`None`, sin login).
+2. Editar ese nodo: cambiar `origen: "SIMULACION"` por `origen: "PLC"` y reemplazar los `nodeId` por los reales del PLC, respetando el tipo de dato (`Boolean`, `UInt32`, etc.). **No inventar NodeIds**: solo se usan señales verificadas en el PLC. `arrancar` debe apuntar a una señal **escribible** real.
+3. Ajustar el nodo `OpcUa-Endpoint` con la URL y la seguridad del servidor real (actualmente `None`/`None`, sin login). El nodo "Escribir arrancar" usa el mismo endpoint.
 4. Desplegar los cambios en Node-RED y recargar la interfaz. El badge debe pasar a **DATOS REALES (PLC)**.
 
-El sistema no escribe en el PLC: no hay comandos de marcha, paro ni reset. Las variables `modo` y `alarmas` no se envían a la interfaz mientras no existan señales reales que las respalden.
+La única escritura es `arrancar` (botón Arrancar/Detener); el resto de variables son de lectura. No hay comandos de paro, reset ni velocidad. Las variables `modo` y `alarmas` no se envían a la interfaz mientras no existan señales reales que las respalden. Antes de escribir en un PLC real, verificar la señal de arranque con el responsable del proceso.
 
 ## 6. Estructura
 
